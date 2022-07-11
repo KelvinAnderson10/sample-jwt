@@ -38,6 +38,11 @@ func main() {
 				ctx.AbortWithStatus(http.StatusUnauthorized)
 				return
 			}
+			err = tokenService.StoreAccessToken(user.Username, token)
+			if err != nil {
+				ctx.AbortWithStatus(http.StatusUnauthorized)
+				return
+			}
 			ctx.JSON(200, gin.H{
 				"token": token,
 			})
@@ -50,14 +55,14 @@ func main() {
 	protectedGroup := routerGroup.Group("/master", middleware.NewTokenValidator(tokenService).RequireToken())
 	protectedGroup.GET("/customer", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{
-			"message": "customer",
+			"message": ctx.GetString("user-id"),
 		})
 
 	})
 
 	protectedGroup.GET("/product", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{
-			"message": "product",
+			"message": ctx.GetString("user-id"),
 		})
 
 	})

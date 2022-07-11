@@ -42,7 +42,8 @@ func (a *authTokenMiddleware) RequireToken() gin.HandlerFunc {
 			return
 		}
 		token, err := a.accToken.VerifyAccessToken(tokenString)
-		if err != nil {
+		userId, err := a.accToken.FetchAccessToken(token)
+		if userId == "" || err != nil {
 			// Kalau token salah
 			fmt.Println(err)
 			ctx.JSON(http.StatusUnauthorized, gin.H{
@@ -53,6 +54,7 @@ func (a *authTokenMiddleware) RequireToken() gin.HandlerFunc {
 		}
 		fmt.Println("token ", token)
 		if token != nil {
+			ctx.Set("user-id", userId)
 			ctx.Next()
 		} else {
 			ctx.JSON(http.StatusUnauthorized, gin.H{
